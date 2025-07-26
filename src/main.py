@@ -17,6 +17,8 @@ def calculate():
     stoptime = request.form.get("starttime")
     hourly = request.form.get("hourly")
 
+    print(starttime, stoptime, hourly)
+
     if starttime is None or stoptime is None or hourly is None:
         return make_response("Missing parameters", 400)
 
