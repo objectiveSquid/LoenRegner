@@ -5,4 +5,5 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return "Hello from /loen!"
+    with open("static/index.html", "r") as fd:
+        return fd.read()
