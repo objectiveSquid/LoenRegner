@@ -1,8 +1,11 @@
 from flask import Flask
+import os.path
 
-app = Flask(__name__)
+STATIC_DIRECTORY = os.path.split(__file__)[0] + "/static"
+
+app = Flask(__name__, static_folder=STATIC_DIRECTORY)
 
 
 @app.route("/")
 def index():
-    return __file__
+    return app.send_static_file("index.html")
