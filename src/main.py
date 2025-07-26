@@ -3,7 +3,11 @@ import os.path
 
 STATIC_DIRECTORY = os.path.split(__file__)[0] + "/static"
 
-app = Flask(__name__, static_folder=STATIC_DIRECTORY)
+DATA_DIRECTORY = os.path.split(os.path.split(__file__)[0])[0] + "/data"
+if os.path.isdir(DATA_DIRECTORY) is False:
+    os.mkdir(DATA_DIRECTORY)
+
+app = Flask(__name__, static_folder=STATIC_DIRECTORY + "/html")
 
 
 @app.route("/", methods=["GET"])
@@ -11,7 +15,7 @@ def index():
     return app.send_static_file("index.html")
 
 
-@app.route("/calculate", methods=["POST"])
+@app.route("/add", methods=["POST"])
 def calculate():
     starttime = request.form.get("starttime")
     stoptime = request.form.get("stoptime")
