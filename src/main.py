@@ -14,7 +14,7 @@ def index():
 @app.route("/calculate", methods=["POST"])
 def calculate():
     starttime = request.form.get("starttime")
-    stoptime = request.form.get("starttime")
+    stoptime = request.form.get("stoptime")
     hourly = request.form.get("hourly")
 
     print(starttime, stoptime, hourly)
