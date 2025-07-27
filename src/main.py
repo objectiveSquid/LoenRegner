@@ -1,11 +1,24 @@
 from flask import request, Flask, make_response, render_template
-import os.path
-import json
+import os
 
 from .user import *
-from . import DATA_DIRECTORY, STATIC_DIRECTORY, init
+
+
+STATIC_DIRECTORY = os.path.split(__file__)[0] + "/static"
+
+DATA_DIRECTORY = os.path.split(os.path.split(__file__)[0])[0] + "/data"
 
 app = Flask(__name__, static_folder=STATIC_DIRECTORY)
+
+
+def init():
+    if os.path.isdir(DATA_DIRECTORY) is False:
+        os.mkdir(DATA_DIRECTORY)
+
+    if os.path.isfile(DATA_DIRECTORY + "/shifts.json") is False:
+        with open(DATA_DIRECTORY + "/shifts.json", "w") as shifts_fd:
+            shifts_fd.write("{}")
+
 
 init()
 
