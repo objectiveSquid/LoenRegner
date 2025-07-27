@@ -1,18 +1,31 @@
-from flask import request, Flask, make_response
+from flask import request, Flask, make_response, render_template
 import os.path
+import json
 
-STATIC_DIRECTORY = os.path.split(__file__)[0] + "/static"
+from .user import *
+from . import DATA_DIRECTORY, STATIC_DIRECTORY
 
-DATA_DIRECTORY = os.path.split(os.path.split(__file__)[0])[0] + "/data"
-if os.path.isdir(DATA_DIRECTORY) is False:
-    os.mkdir(DATA_DIRECTORY)
-
-app = Flask(__name__, static_folder=STATIC_DIRECTORY + "/html")
+app = Flask(__name__, static_folder=STATIC_DIRECTORY)
 
 
 @app.route("/", methods=["GET"])
 def index():
-    return app.send_static_file("index.html")
+    session = request.cookies.get("SessionID", "")
+
+    if not isValidSessionID(session):
+        return app.send_static_file("html/index.html")  # user not logged in
+
+    return app.redirect("/shifts")
+
+
+@app.route("/shifts", methods=["GET"])
+def shifts():
+    session = request.cookies.get("SessionID", "")
+
+    if not isValidSessionID(session):
+        return app.redirect("/")
+
+    return render_template("html/shifts.html", session=session)
 
 
 @app.route("/add", methods=["POST"])
