@@ -3,9 +3,11 @@ import os.path
 import json
 
 from .user import *
-from . import DATA_DIRECTORY, STATIC_DIRECTORY
+from . import DATA_DIRECTORY, STATIC_DIRECTORY, init
 
 app = Flask(__name__, static_folder=STATIC_DIRECTORY)
+
+init()
 
 
 @app.route("/", methods=["GET"])

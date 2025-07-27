@@ -12,6 +12,3 @@ def init():
     if os.path.isfile(DATA_DIRECTORY + "/shifts.json") is False:
         with open(DATA_DIRECTORY + "/shifts.json", "w") as shifts_fd:
             shifts_fd.write("{}")
-
-
-init()
