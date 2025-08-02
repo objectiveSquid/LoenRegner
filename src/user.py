@@ -1,22 +1,33 @@
-from config import DATA_DIRECTORY
+from config import DATA_DIRECTORY, SESSION_TIMEOUT
+from typing import Any
 import time
 import hashlib
 import uuid
 import json
 
 
-def getUserInfo(uuid: str) -> dict:
+def getUserInfo(uuid: Any) -> dict:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
         return users.get(uuid)
 
 
 def getShifts(uuid: str) -> dict:
-    user = getUserInfo(uuid)
-
     with open(DATA_DIRECTORY + "/shifts.json", "r") as shifts_fd:
         shifts = json.load(shifts_fd)
-        return shifts.get(user.get(uuid))
+        return shifts.get(uuid)
+
+
+def getUUID(sessionID: str) -> str | None:
+    with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
+        users = json.load(users_fd)
+
+    for user in users.values():
+        for session, expiration in user["sessions"].items():
+            if session == sessionID and expiration > int(round(time.time() * 1000)):
+                return user["uuid"]
+
+    return None
 
 
 def isValidSessionID(sessionID: str) -> bool:
@@ -74,7 +85,7 @@ def userExists(username: str) -> bool:
     return False
 
 
-def createUser(username: str, password: str) -> str:
+def createUser(username: str, password: str, hourly: int) -> str:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
 
@@ -85,6 +96,8 @@ def createUser(username: str, password: str) -> str:
     salt = uuid.uuid4().hex
 
     users[new_uuid] = {
+        "uuid": new_uuid,  # duplicate field for convienience
+        "hourly": hourly,
         "username": username,
         "password": generatePasswordHash(password, salt),
         "salt": salt,
@@ -93,5 +106,13 @@ def createUser(username: str, password: str) -> str:
 
     with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
         json.dump(users, users_fd)
+
+    with open(DATA_DIRECTORY + "/shifts.json", "r") as shifts_fd:
+        shifts = json.load(shifts_fd)
+
+    shifts[new_uuid] = []
+
+    with open(DATA_DIRECTORY + "/shifts.json", "w") as shifts_fd:
+        json.dump(shifts, shifts_fd)
 
     return new_uuid

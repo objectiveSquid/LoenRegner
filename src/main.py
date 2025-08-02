@@ -2,6 +2,7 @@ from flask import request, Flask, make_response, render_template
 import os
 
 from user import *
+from shifts import *
 from config import *
 
 app = Flask(
@@ -55,6 +56,7 @@ def getSessionID():
 def createAccount():
     username = request.json.get("username")
     password = request.json.get("password")
+    hourly = request.json.get("hourly")
 
     if username is None or password is None:
         return make_response("Missing parameters", 400)
@@ -62,7 +64,7 @@ def createAccount():
     if userExists(username):
         return make_response("Username is taken", 409)
 
-    uuid = createUser(username, password)
+    uuid = createUser(username, password, hourly)
 
     return make_response(uuid, 200)
 
@@ -74,7 +76,10 @@ def shifts():
     if not isValidSessionID(session):
         return app.redirect("/login")
 
-    return render_template("index.jinja2", session=session)
+    user = getUserInfo(getUUID(session))
+    shifts = getShifts(user["uuid"])
+
+    return render_template("shifts.jinja2", user=user, shifts=shifts)
 
 
 @app.route("/login", methods=["GET"])
@@ -95,9 +100,18 @@ def signup():
 
 @app.route("/add", methods=["POST"])
 def calculate():
-    starttime = request.form.get("starttime")
-    stoptime = request.form.get("stoptime")
-    hourly = request.form.get("hourly")
+    session = request.cookies.get("SessionID", "")
+
+    if not isValidSessionID(session):
+        return app.redirect("/login")
+
+    uuid = getUUID(session)
+    if uuid is None:
+        return make_response("Invalid session", 401)
+
+    starttime = request.json.get("starttime")
+    stoptime = request.json.get("stoptime")
+    hourly = request.json.get("hourly")
 
     if starttime is None or stoptime is None or hourly is None:
         return make_response("Missing parameters", 400)
@@ -107,20 +121,31 @@ def calculate():
 
     if hourly.isnumeric() is False:
         return make_response("Hourly must be a number", 400)
+    hourly = int(hourly)
 
     start_hour, start_minute = starttime.split(":")
     stop_hour, stop_minute = stoptime.split(":")
 
     try:
-        start_time = int(start_hour) * 60 + int(start_minute)
-        stop_time = int(stop_hour) * 60 + int(stop_minute)
+        start_hour = int(start_hour)
+        start_minute = int(start_minute)
+        stop_hour = int(stop_hour)
+        stop_minute = int(stop_minute)
     except ValueError:
         return make_response("Invalid time format", 400)
 
-    if stop_time < start_time:
+    start_time_minutes = start_hour * 60 + start_minute
+    stop_time_minutes = stop_hour * 60 + stop_minute
+
+    if stop_time_minutes < start_time_minutes:
         return make_response("Stop time must be after start time", 400)
 
-    hours_worked = (stop_time - start_time) / 60
-    total_pay = hours_worked * int(hourly)
+    hours_worked = (stop_time_minutes - start_time_minutes) / 60
+    total_pay = hours_worked * hourly
 
-    return make_response(f"Total pay: {total_pay}", 200)
+    minutes_worked = stop_time_minutes - start_time_minutes
+    time_worked_pretty = f"{int(hours_worked)}:{minutes_worked % 60}"
+
+    addShift(uuid, starttime, stoptime, time_worked_pretty, total_pay, hourly)
+
+    return make_response("Shift added", 200)

@@ -1,6 +1,7 @@
 function signup() {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
+    const hourly = document.getElementById("hourly").value;
 
     fetch("/createAccount", {
         method: "POST",
@@ -9,7 +10,8 @@ function signup() {
         },
         body: JSON.stringify({
             username: username,
-            password: password
+            password: password,
+            hourly: hourly,
         })
     }).then((response) => {
         if (!response.ok) {

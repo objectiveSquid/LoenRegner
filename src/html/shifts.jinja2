@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="dk">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Shifts overview for {{ user["username"] }}</title>
+    <script src="static/js/shifts.js"></script>
+</head>
+
+<body>
+    <h2>Shifts overview for {{ user["username"] }}</h2>
+
+    <div id="addshiftbox">
+        <input type="text" id="starttime" placeholder="Start tidspunkt"><br>
+        <input type="text" id="stoptime" placeholder="Stop tidspunkt"><br>
+        <input type="text" id="hourly" placeholder="Timeløn" value="{{ user['hourly'] }}"><br>
+        <button onclick="addShift()">Tilføj vagt</button>
+    </div>
+
+    <div id="shifts">
+        {% for shift in shifts %}
+            <span>{{ shift["date"] }}: {{ shift["start"] }} - {{ shift["stop"] }} - {{ shift["wage"] }}kr ({{ shift["hourly"] }}kr i timen)</span><br>
+        {% endfor %}
+    </div>
+</body>
+
+</html>
