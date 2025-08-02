@@ -1,12 +1,97 @@
-from . import DATA_DIRECTORY
+from config import DATA_DIRECTORY
+import time
+import hashlib
+import uuid
 import json
 
 
-def getUser(session: str) -> dict:
+def getUserInfo(uuid: str) -> dict:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
-        return users.get(session)
+        return users.get(uuid)
+
+
+def getShifts(uuid: str) -> dict:
+    user = getUserInfo(uuid)
+
+    with open(DATA_DIRECTORY + "/shifts.json", "r") as shifts_fd:
+        shifts = json.load(shifts_fd)
+        return shifts.get(user.get(uuid))
 
 
 def isValidSessionID(sessionID: str) -> bool:
-    return getUser(sessionID) is not None
+    with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
+        users = json.load(users_fd)
+
+    for user in users.values():
+        for session, expiration in user["sessions"].items():
+            if session == sessionID and expiration > int(round(time.time() * 1000)):
+                return True
+
+    return False
+
+
+def generatePasswordHash(password: str, salt: str) -> str:
+    return hashlib.sha256(password.encode() + salt.encode()).hexdigest()
+
+
+def generateSessionID(target_uuid: str) -> str:
+    with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
+        users = json.load(users_fd)
+
+    user = users.get(target_uuid)
+
+    session_id = uuid.uuid4().hex
+    user["sessions"][session_id] = int(round(time.time() * 1000 + SESSION_TIMEOUT))
+
+    with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
+        json.dump(users, users_fd, indent=4)
+
+    return session_id
+
+
+def verifyCredentials(username: str, password: str) -> str | None:
+    with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
+        users = json.load(users_fd)
+
+    for uuid, user in users.items():
+        if user["username"] == username and user["password"] == generatePasswordHash(
+            password, user["salt"]
+        ):
+            return uuid
+
+    return None
+
+
+def userExists(username: str) -> bool:
+    with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
+        users = json.load(users_fd)
+
+    for user in users.values():
+        if user["username"] == username:
+            return True
+
+    return False
+
+
+def createUser(username: str, password: str) -> str:
+    with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
+        users = json.load(users_fd)
+
+    new_uuid = uuid.uuid4().hex
+    while new_uuid in users.keys():
+        new_uuid = uuid.uuid4().hex  # will likely never happen
+
+    salt = uuid.uuid4().hex
+
+    users[new_uuid] = {
+        "username": username,
+        "password": generatePasswordHash(password, salt),
+        "salt": salt,
+        "sessions": {},  # a dict like: `{session_id_string: expiration_epoch_time, ...}`
+    }
+
+    with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
+        json.dump(users, users_fd)
+
+    return new_uuid

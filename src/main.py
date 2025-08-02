@@ -1,14 +1,12 @@
 from flask import request, Flask, make_response, render_template
 import os
 
-from .user import *
+from user import *
+from config import *
 
-
-STATIC_DIRECTORY = os.path.split(__file__)[0] + "/static"
-
-DATA_DIRECTORY = os.path.split(os.path.split(__file__)[0])[0] + "/data"
-
-app = Flask(__name__, static_folder=STATIC_DIRECTORY)
+app = Flask(
+    __name__, static_folder=STATIC_DIRECTORY, template_folder=TEMPLATES_DIRECTORY
+)
 
 
 def init():
@@ -19,6 +17,10 @@ def init():
         with open(DATA_DIRECTORY + "/shifts.json", "w") as shifts_fd:
             shifts_fd.write("{}")
 
+    if os.path.isfile(DATA_DIRECTORY + "/users.json") is False:
+        with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
+            users_fd.write("{}")
+
 
 init()
 
@@ -28,9 +30,41 @@ def index():
     session = request.cookies.get("SessionID", "")
 
     if not isValidSessionID(session):
-        return app.send_static_file("html/index.html")  # user not logged in
+        return app.redirect("/login")  # user not logged in
 
     return app.redirect("/shifts")
+
+
+@app.route("/getSessionID", methods=["POST"])
+def getSessionID():
+    username = request.json.get("username")
+    password = request.json.get("password")
+
+    if username is None or password is None:
+        return make_response("Missing parameters", 400)
+
+    if (uuid := verifyCredentials(username, password)) is None:
+        return make_response("Invalid username or password", 401)
+
+    session = generateSessionID(uuid)
+
+    return make_response(session, 200)
+
+
+@app.route("/createAccount", methods=["POST"])
+def createAccount():
+    username = request.json.get("username")
+    password = request.json.get("password")
+
+    if username is None or password is None:
+        return make_response("Missing parameters", 400)
+
+    if userExists(username):
+        return make_response("Username is taken", 409)
+
+    uuid = createUser(username, password)
+
+    return make_response(uuid, 200)
 
 
 @app.route("/shifts", methods=["GET"])
@@ -38,9 +72,25 @@ def shifts():
     session = request.cookies.get("SessionID", "")
 
     if not isValidSessionID(session):
-        return app.redirect("/")
+        return app.redirect("/login")
 
-    return render_template("html/shifts.html", session=session)
+    return render_template("index.jinja2", session=session)
+
+
+@app.route("/login", methods=["GET"])
+def login():
+    if isValidSessionID(request.cookies.get("SessionID", "")):
+        return app.redirect("/shifts")
+
+    return app.send_static_file("html/login.html")
+
+
+@app.route("/signup", methods=["GET"])
+def signup():
+    if isValidSessionID(request.cookies.get("SessionID", "")):
+        return app.redirect("/shifts")
+
+    return app.send_static_file("html/signup.html")
 
 
 @app.route("/add", methods=["POST"])
@@ -48,8 +98,6 @@ def calculate():
     starttime = request.form.get("starttime")
     stoptime = request.form.get("stoptime")
     hourly = request.form.get("hourly")
-
-    print(starttime, stoptime, hourly)
 
     if starttime is None or stoptime is None or hourly is None:
         return make_response("Missing parameters", 400)
