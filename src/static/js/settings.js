@@ -12,7 +12,31 @@ function changeDefaultHourly() {
     }).then((response) => {
         if (!response.ok) {
             response.json().then((json) => {
-                alert("Error: " + response.status + ", " + json["status"]);
+                alert("Fejl: " + response.status + ", " + json["status"]);
+            })
+            return;
+        }
+
+        window.location.reload();
+        return;
+    })
+}
+
+function changeTaxStart() {
+    const newTaxStart = document.getElementById("newTaxStart").value;
+
+    fetch("changeTaxStart", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            newTaxStart: newTaxStart,
+        })
+    }).then((response) => {
+        if (!response.ok) {
+            response.json().then((json) => {
+                alert("Fejl: " + response.status + ", " + json["status"]);
             })
             return;
         }

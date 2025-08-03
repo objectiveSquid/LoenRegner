@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Shifts overview for {{ user["username"] }}</title>
+    <title>Vagtoverblik</title>
     <script src="static/js/shifts.js"></script>
     <script src="static/js/account.js"></script>
     <script src="static/js/settings.js"></script>
@@ -11,10 +11,13 @@
 </head>
 
 <body>
-    <h1>Shifts overview for {{ user["username"] }}</h1>
+    <h1>Vagtoverblik for {{ user["username"] }}</h1>
 
     <div class="inputsContainer">
         <div class="createShiftContainer">
+            <span>Tilføj en vagt</span>
+            <br>
+            <br>
             <input type="text" id="date" placeholder="Dato" value="{{ default_date }}"><br>
             <input type="text" id="starttime" placeholder="Start tidspunkt"><br>
             <input type="text" id="stoptime" placeholder="Stop tidspunkt"><br>
@@ -23,6 +26,7 @@
         </div>
         <div class="accountActionsContainer">
             <span>Skift adgangskode</span>
+            <br>
             <br>
             <input type="text" id="oldPassword" placeholder="Din nuværende adgangskode">
             <br>
@@ -34,12 +38,21 @@
             <button onclick="logout()">Log ud</button>
             <button onclick="deleteAccount()">Slet konto</button>
         </div>
-        <div class="changeDefaultsContainer">
+        <div class="accountActionsContainer">
             <span>Skift standard timeløn</span>
+            <br>
             <br>
             <input type="number" id="newHourly" placeholder="Ny timeløn" value="{{ user['hourly'] }}">
             <br>
             <button onclick="changeDefaultHourly()">Skift standard timeløn</button>
+        </div>
+        <div class="accountActionsContainer">
+            <span>Skift hvornår beskatning starter</span>
+            <br>
+            <br>
+            <input type="number" id="newTaxStart" placeholder="Hvornår beskatning begynder" value="{{ user['tax_start'] }}">
+            <br>
+            <button onclick="changeTaxStart()">Skift hvornår beskatning starter</button>
         </div>
     </div>
 

@@ -1,9 +1,11 @@
-from config import DATA_DIRECTORY
 from collections import OrderedDict
 import datetime
 import uuid
 import json
 from typing import Any
+
+from user import get_user_info
+from config import *
 
 
 MONTH_READABLE = {
@@ -28,14 +30,6 @@ def get_shifts(uuid: str) -> dict[str, Any]:
         return shifts.get(uuid)
 
 
-# names are somewhat in danish
-AM_BIDRAG_MULTIPLIER = 0.92
-FRIKORT_LIMIT = 51_600
-BUNDSKAT_MULTIPLIER = 0.8799  # 12.01% på bundskat
-TOPSKAT_CUTOFF = 611_800  # DKK
-TOPSKAT_MULTIPLIER = 0.85  # 15% på toplønnere
-
-
 def get_shifts_formatted(
     uuid: str,
 ) -> list[
@@ -44,6 +38,7 @@ def get_shifts_formatted(
     | OrderedDict[str, float | int | dict[str, str | float | dict[str, Any]]],
 ]:
     shifts = get_shifts(uuid)
+    user_info = get_user_info(uuid)
     output = {}
 
     for shift in shifts.values():
@@ -97,23 +92,26 @@ def get_shifts_formatted(
 
         # sort months
         output[year]["months"] = OrderedDict(
-            sorted(output[year]["months"].items(), key=lambda x: x[0])
+            sorted(output[year]["months"].items(), key=lambda x: x[0], reverse=True)
         )
 
     # sort years
-    output = OrderedDict(sorted(output.items(), key=lambda x: x[0]))
+    output = OrderedDict(sorted(output.items(), key=lambda x: x[0], reverse=True))
 
     for year in output.values():
         year["months"] = list(year["months"].values())
 
-    # "am-bidrag" and taxes
+    # calculate "am-bidrag" and taxes
     for year in output.values():
         year["taxed_wage"] = year["wage"] * AM_BIDRAG_MULTIPLIER
-        if year["taxed_wage"] > FRIKORT_LIMIT:
+
+        if year["taxed_wage"] > user_info["tax_start"]:
             if year["taxed_wage"] > TOPSKAT_CUTOFF:
-                year["taxed_wage"] = year["taxed_wage"] * TOPSKAT_MULTIPLIER
+                tax = TOPSKAT
             else:
-                year["taxed_wage"] = year["taxed_wage"] * BUNDSKAT_MULTIPLIER
+                tax = BUNDSKAT
+
+            year["taxed_wage"] -= (year["taxed_wage"] - user_info["tax_start"]) * tax
 
         for month in year["months"]:
             month["wage_after_am"] = month["wage"] * AM_BIDRAG_MULTIPLIER

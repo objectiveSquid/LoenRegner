@@ -18,7 +18,7 @@ function addShift() {
     }).then((response) => {
         if (!response.ok) {
             response.json().then((json) => {
-                alert("Error: " + response.status + ", " + json["status"]);
+                alert("Fejl: " + response.status + ", " + json["status"]);
             })
             return;
         }
@@ -39,7 +39,7 @@ function deleteShift(uuid) {
     }).then((response) => {
         if (!response.ok) {
             response.json().then((json) => {
-                alert("Error: " + response.status + ", " + json["status"]);
+                alert("Fejl: " + response.status + ", " + json["status"]);
             })
             return;
         }

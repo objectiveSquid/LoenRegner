@@ -14,7 +14,7 @@ function login() {
     }).then((response) => {
         if (!response.ok) {
             response.json().then((json) => {
-                alert("Error: " + response.status + ", " + json["status"]);
+                alert("Fejl: " + response.status + ", " + json["status"]);
             })
             return;
         }

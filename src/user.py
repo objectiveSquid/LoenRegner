@@ -1,4 +1,4 @@
-from config import DATA_DIRECTORY, SESSION_TIMEOUT
+from config import DATA_DIRECTORY, SESSION_TIMEOUT, DEFAULT_TAX_START, DEFAULT_HOURLY
 from typing import Any
 import time
 import hashlib
@@ -7,9 +7,29 @@ import json
 
 
 def get_user_info(uuid: Any) -> dict[str, Any]:
+    rewrite = False
+
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
-        return users.get(uuid)
+        user_info = users.get(uuid)
+
+        try:
+            user_info["tax_start"]
+        except KeyError:
+            rewrite = True
+            user_info["tax_start"] = DEFAULT_TAX_START
+
+        try:
+            user_info["hourly"]
+        except KeyError:
+            rewrite = True
+            user_info["hourly"] = DEFAULT_HOURLY
+
+    if rewrite:
+        with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
+            json.dump(users, users_fd, indent=4)
+
+    return user_info
 
 
 def get_UUID(sessionID: str) -> str | None:
@@ -163,6 +183,16 @@ def change_user_hourly(uuid: str, new_hourly: int) -> None:
         users = json.load(users_fd)
 
     users[uuid]["hourly"] = new_hourly
+
+    with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
+        json.dump(users, users_fd, indent=4)
+
+
+def change_user_tax_start(uuid: str, new_tax_start: float) -> None:
+    with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
+        users = json.load(users_fd)
+
+    users[uuid]["tax_start"] = new_tax_start
 
     with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
         json.dump(users, users_fd, indent=4)

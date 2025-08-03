@@ -16,7 +16,7 @@ function signup() {
     }).then((response) => {
         if (!response.ok) {
             response.json().then((json) => {
-                alert("Error: " + response.status + ", " + json["status"]);
+                alert("Fejl: " + response.status + ", " + json["status"]);
             })
             return;
         }
@@ -24,7 +24,7 @@ function signup() {
         response.text().then((uuid) => {
             if (uuid === null) {
                 response.json().then((json) => {
-                    alert("Error: " + response.status + ", " + json["status"]);
+                    alert("Fejl: " + response.status + ", " + json["status"]);
                 })
                 return;
             }
@@ -41,7 +41,7 @@ function signup() {
             }).then((response) => {
                 if (!response.ok) {
                     response.json().then((json) => {
-                        alert("Error: " + response.status + ", " + json["status"]);
+                        alert("Fejl: " + response.status + ", " + json["status"]);
                     })
                     return;
                 }

@@ -7,7 +7,7 @@ function logout() {
     }).then((response) => {
         if (!response.ok) {
             response.json().then((json) => {
-                alert("Error: " + response.status + ", " + json["status"]);
+                alert("Fejl: " + response.status + ", " + json["status"]);
             })
             return;
         }
@@ -31,7 +31,7 @@ function deleteAccount() {
     }).then((response) => {
         if (!response.ok) {
             response.json().then((json) => {
-                alert("Error: " + response.status + ", " + json["status"]);
+                alert("Fejl: " + response.status + ", " + json["status"]);
                 window.location.href = "login"; // If the account failed to delete: the login will redirect back to the shifts page. But if it succeeded: it will stay at the login page.
                 return;
             })
@@ -61,7 +61,7 @@ function changePassword() {
     }).then((response) => {
         if (!response.ok) {
             response.json().then((json) => {
-                alert("Error: " + response.status + ", " + json["status"]);
+                alert("Fejl: " + response.status + ", " + json["status"]);
             })
             return;
         }
