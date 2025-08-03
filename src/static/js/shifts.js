@@ -23,7 +23,7 @@ function addShift() {
             return;
         }
 
-        window.location.href = "shifts";
+        window.location.reload();
     });
 }
 
@@ -43,7 +43,7 @@ function deleteShift(uuid) {
             })
             return;
         }
-
-        window.location.href = "shifts";
+        
+        window.location.reload();
     });
 }

@@ -204,13 +204,18 @@ def create_account_endpoint():
     password = request.json.get("password")
     hourly = request.json.get("hourly")
 
-    if username is None or password is None:
+    if username is None or password is None or hourly is None:
         return make_response(jsonify({"status": "Missing parameters"}), 400)
+
+    try:
+        hourly = float(hourly)
+    except ValueError:
+        return make_response(jsonify({"status": "Hourly must be a number"}), 400)
 
     if user_exists(username):
         return make_response(jsonify({"status": "Username is taken"}), 409)
 
-    uuid = create_user(username, password, hourly)
+    uuid = create_user(username, password, float(hourly))
 
     return make_response(uuid, 200)
 
@@ -269,3 +274,30 @@ def change_password_endpoint():
     change_password(uuid, new_password)
 
     return make_response(jsonify({"status": "Password changed"}), 200)
+
+
+@app.route("/changeDefaultHourly", methods=["POST"])
+def change_default_hourly():
+    session = request.cookies.get("SessionID", "")
+
+    if not is_valid_sessionID(session):
+        return custom_redirect("/login")
+
+    uuid = get_UUID(session)
+    if uuid is None:
+        return make_response(jsonify({"status": "Invalid session"}), 401)
+
+    new_hourly = request.json.get("newHourly")
+
+    if new_hourly is None:
+        return make_response(jsonify({"status": "Missing parameters"}), 400)
+
+    try:
+        new_hourly = float(new_hourly)
+    except ValueError:
+        return make_response(jsonify({"status": "Hourly must be a number"}), 400)
+
+    print("new_hourly", new_hourly)
+    change_user_hourly(uuid, int(new_hourly))
+
+    return make_response(jsonify({"status": "Default hourly changed"}), 200)

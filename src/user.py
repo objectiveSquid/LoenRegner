@@ -94,7 +94,7 @@ def user_exists(username: str) -> bool:
     return False
 
 
-def create_user(username: str, password: str, hourly: int) -> str:
+def create_user(username: str, password: str, hourly: float) -> str:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
 
@@ -153,6 +153,16 @@ def change_password(user_uuid: str, new_password: str) -> None:
     users[user_uuid]["password"] = generate_password_hash(
         new_password, users[user_uuid]["salt"]
     )
+
+    with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
+        json.dump(users, users_fd, indent=4)
+
+
+def change_user_hourly(uuid: str, new_hourly: int) -> None:
+    with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
+        users = json.load(users_fd)
+
+    users[uuid]["hourly"] = new_hourly
 
     with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
         json.dump(users, users_fd, indent=4)
