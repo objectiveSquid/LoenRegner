@@ -3,7 +3,7 @@ function signup() {
     const password = document.getElementById("password").value;
     const hourly = document.getElementById("hourly").value;
 
-    fetch("/createAccount", {
+    fetch("createAccount", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
