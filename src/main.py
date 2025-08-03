@@ -27,14 +27,39 @@ def init():
 init()
 
 
+# bad code, but im lazy
+use_custom_redirect = True
+
+
+def custom_redirect(path: str, **kwargs: Any):
+    global use_custom_redirect
+
+    if not use_custom_redirect:
+        return redirect(path, **kwargs)
+
+    path = "/" + path.lstrip("/")  # make sure the path starts with a slash
+
+    return redirect("/loen" + path, **kwargs)
+
+
+def disable_custom_redirect():
+    global use_custom_redirect
+    use_custom_redirect = False
+
+
+def enable_custom_redirect():
+    global use_custom_redirect
+    use_custom_redirect = True
+
+
 @app.route("/", methods=["GET"])
 def index_page():
     session = request.cookies.get("SessionID", "")
 
     if not is_valid_sessionID(session):
-        return redirect("/login")  # user not logged in
+        return custom_redirect("/login")  # user not logged in
 
-    return redirect("/shifts")
+    return custom_redirect("/shifts")
 
 
 @app.route("/shifts", methods=["GET"])
@@ -42,7 +67,7 @@ def shifts_page():
     session = request.cookies.get("SessionID", "")
 
     if not is_valid_sessionID(session):
-        return redirect("/login")
+        return custom_redirect("/login")
 
     user = get_user_info(get_UUID(session))
     shifts = get_shifts_formatted(user["uuid"])
@@ -58,7 +83,7 @@ def shifts_page():
 @app.route("/login", methods=["GET"])
 def login_page():
     if is_valid_sessionID(request.cookies.get("SessionID", "")):
-        return redirect("/shifts")
+        return custom_redirect("/shifts")
 
     return app.send_static_file("html/login.html")
 
@@ -66,7 +91,7 @@ def login_page():
 @app.route("/signup", methods=["GET"])
 def signup_page():
     if is_valid_sessionID(request.cookies.get("SessionID", "")):
-        return redirect("/shifts")
+        return custom_redirect("/shifts")
 
     return app.send_static_file("html/signup.html")
 
@@ -76,7 +101,7 @@ def add_shift_endpoint():
     session = request.cookies.get("SessionID", "")
 
     if not is_valid_sessionID(session):
-        return redirect("/login")
+        return custom_redirect("/login")
 
     uuid = get_UUID(session)
     if uuid is None:
@@ -140,7 +165,7 @@ def delete():
     session = request.cookies.get("SessionID", "")
 
     if not is_valid_sessionID(session):
-        return redirect("/login")
+        return custom_redirect("/login")
 
     uuid = get_UUID(session)
     if uuid is None:
@@ -207,7 +232,7 @@ def delete_account_endpoint():
     session = request.cookies.get("SessionID", "")
 
     if not is_valid_sessionID(session):
-        return redirect("/login")
+        return custom_redirect("/login")
 
     uuid = get_UUID(session)
     if uuid is None:
@@ -223,7 +248,7 @@ def change_password_endpoint():
     session = request.cookies.get("SessionID", "")
 
     if not is_valid_sessionID(session):
-        return redirect("/login")
+        return custom_redirect("/login")
 
     uuid = get_UUID(session)
     if uuid is None:
