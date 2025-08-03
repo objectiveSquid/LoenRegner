@@ -14,7 +14,7 @@ function logout() {
     })
 
     document.cookie = "SessionID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    window.location.href = "/login";
+    window.location.href = "login";
 }
 
 function deleteAccount() {
@@ -32,14 +32,14 @@ function deleteAccount() {
         if (!response.ok) {
             response.json().then((json) => {
                 alert("Error: " + response.status + ", " + json["status"]);
-                window.location.href = "/login"; // If the account failed to delete: the login will redirect back to the shifts page. But if it succeeded: it will stay at the login page.
+                window.location.href = "login"; // If the account failed to delete: the login will redirect back to the shifts page. But if it succeeded: it will stay at the login page.
                 return;
             })
 
         }
         // successfully deleted account
         document.cookie = "SessionID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        window.location.href = "/login";
+        window.location.href = "login";
         return;
     })
     

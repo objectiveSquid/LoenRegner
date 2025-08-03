@@ -23,7 +23,7 @@ function addShift() {
             return;
         }
 
-        window.location.href = "/shifts";
+        window.location.href = "shifts";
     });
 }
 
@@ -44,6 +44,6 @@ function deleteShift(uuid) {
             return;
         }
 
-        window.location.href = "/shifts";
+        window.location.href = "shifts";
     });
 }

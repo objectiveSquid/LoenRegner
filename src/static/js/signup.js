@@ -48,7 +48,7 @@ function signup() {
                 
                 response.text().then((text) => {
                     document.cookie = "SessionID=" + text;
-                    window.location.href = "/shifts";
+                    window.location.href = "shifts";
                 })
             })
         })
