@@ -1,0 +1,12 @@
+.inputsContainer {
+    display: flex;
+}
+
+.createShiftContainer {
+    width: 50%;
+}
+
+.accountActionsContainer {
+    width: 20%;
+    margin-left: auto;
+}

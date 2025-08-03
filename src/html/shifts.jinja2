@@ -5,17 +5,32 @@
     <meta charset="UTF-8">
     <title>Shifts overview for {{ user["username"] }}</title>
     <script src="static/js/shifts.js"></script>
+    <script src="static/js/account.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/css/shiftspage.css">
 </head>
 
 <body>
     <h1>Shifts overview for {{ user["username"] }}</h1>
 
-    <div id="addshiftbox">
-        <input type="text" id="date" placeholder="Dato" value="{{ default_date }}"><br>
-        <input type="text" id="starttime" placeholder="Start tidspunkt"><br>
-        <input type="text" id="stoptime" placeholder="Stop tidspunkt"><br>
-        <input type="text" id="hourly" placeholder="Timeløn" value="{{ user['hourly'] }}"><br>
-        <button onclick="addShift()">Tilføj vagt</button>
+    <div class="inputsContainer">
+        <div class="createShiftContainer">
+            <input type="text" id="date" placeholder="Dato" value="{{ default_date }}"><br>
+            <input type="text" id="starttime" placeholder="Start tidspunkt"><br>
+            <input type="text" id="stoptime" placeholder="Stop tidspunkt"><br>
+            <input type="text" id="hourly" placeholder="Timeløn" value="{{ user['hourly'] }}"><br>
+            <button onclick="addShift()">Tilføj vagt</button>
+        </div>
+        <div class="accountActionsContainer">
+            <button onclick="logout()">Log ud</button>
+            <button onclick="deleteAccount()">Slet konto</button>
+            <br>
+            <br>
+            <span>Skift adgangskode</span>
+            <br>
+            <input type="text" id="oldPassword" placeholder="Din nuværende adgangskode">
+            <input type="text" id="newPassword" placeholder="Din nye adgangskode">
+            <button onclick="changePassword()">Skift adgangskode</button>
+        </div>
     </div>
 
     <div id="shifts">

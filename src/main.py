@@ -187,3 +187,59 @@ def create_account_endpoint():
     uuid = create_user(username, password, hourly)
 
     return make_response(uuid, 200)
+
+
+@app.route("/logout", methods=["POST"])
+def logout_endpoint():
+    session = request.cookies.get("SessionID", "")
+
+    invalidate_sessionID(session)
+
+    response = make_response(jsonify({"status": "Logged out"}), 200)
+    response.delete_cookie(
+        "SessionID"
+    )  # this is also done in the javascript, but just to make sure
+    return response
+
+
+@app.route("/deleteAccount", methods=["POST"])
+def delete_account_endpoint():
+    session = request.cookies.get("SessionID", "")
+
+    if not is_valid_sessionID(session):
+        return app.redirect("/login")
+
+    uuid = get_UUID(session)
+    if uuid is None:
+        return make_response(jsonify({"status": "Invalid session"}), 401)
+
+    delete_user(uuid)
+
+    return make_response(jsonify({"status": "Account deleted"}), 200)
+
+
+@app.route("/changePassword", methods=["POST"])
+def change_password_endpoint():
+    session = request.cookies.get("SessionID", "")
+
+    if not is_valid_sessionID(session):
+        return app.redirect("/login")
+
+    uuid = get_UUID(session)
+    if uuid is None:
+        return make_response(jsonify({"status": "Invalid session"}), 401)
+
+    user_info = get_user_info(uuid)
+
+    old_password = request.json.get("oldPassword")
+    new_password = request.json.get("newPassword")
+
+    if old_password is None or new_password is None:
+        return make_response(jsonify({"status": "Missing parameters"}), 400)
+
+    if verify_credentials(user_info["username"], old_password) is None:
+        return make_response(jsonify({"status": "Invalid old password"}), 401)
+
+    change_password(uuid, new_password)
+
+    return make_response(jsonify({"status": "Password changed"}), 200)

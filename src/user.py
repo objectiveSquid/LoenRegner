@@ -36,7 +36,22 @@ def is_valid_sessionID(sessionID: str) -> bool:
     return False
 
 
-def generate_password_hash(password: str, salt: str) -> str:
+def invalidate_sessionID(sessionID: str) -> None:
+    with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
+        users = json.load(users_fd)
+
+    for user in users.values():
+        if sessionID in user["sessions"]:
+            del user["sessions"][sessionID]
+
+    with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
+        json.dump(users, users_fd, indent=4)
+
+
+def generate_password_hash(password: str, salt: str | None) -> str:
+    if salt is None:
+        salt = uuid.uuid4().hex
+
     return hashlib.sha256(password.encode() + salt.encode()).hexdigest()
 
 
@@ -99,14 +114,45 @@ def create_user(username: str, password: str, hourly: int) -> str:
     }
 
     with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
-        json.dump(users, users_fd)
+        json.dump(users, users_fd, indent=4)
 
     with open(DATA_DIRECTORY + "/shifts.json", "r") as shifts_fd:
         shifts = json.load(shifts_fd)
 
-    shifts[new_uuid] = []
+    shifts[new_uuid] = {}
 
     with open(DATA_DIRECTORY + "/shifts.json", "w") as shifts_fd:
-        json.dump(shifts, shifts_fd)
+        json.dump(shifts, shifts_fd, indent=4)
 
     return new_uuid
+
+
+def delete_user(uuid: str) -> None:
+    with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
+        users = json.load(users_fd)
+
+    del users[uuid]
+
+    with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
+        json.dump(users, users_fd, indent=4)
+
+    with open(DATA_DIRECTORY + "/shifts.json", "r") as shifts_fd:
+        shifts = json.load(shifts_fd)
+
+    del shifts[uuid]
+
+    with open(DATA_DIRECTORY + "/shifts.json", "w") as shifts_fd:
+        json.dump(shifts, shifts_fd, indent=4)
+
+
+def change_password(user_uuid: str, new_password: str) -> None:
+    with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
+        users = json.load(users_fd)
+
+    users[user_uuid]["salt"] = uuid.uuid4().hex
+    users[user_uuid]["password"] = generate_password_hash(
+        new_password, users[user_uuid]["salt"]
+    )
+
+    with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
+        json.dump(users, users_fd, indent=4)
