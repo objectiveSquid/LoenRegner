@@ -45,14 +45,12 @@ def shifts_page():
         return app.redirect("/login")
 
     user = get_user_info(get_UUID(session))
-    shifts = get_shifts(user["uuid"])
-    if not isinstance(shifts, dict):
-        shifts = {}
+    shifts = get_shifts_formatted(user["uuid"])
 
     return render_template(
         "shifts.jinja2",
         user=user,
-        shifts=shifts.values(),
+        shifts=shifts,
         default_date=datetime.datetime.now().strftime("%d/%m/%Y"),
     )
 

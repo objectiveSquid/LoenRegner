@@ -12,12 +12,6 @@ def get_user_info(uuid: Any) -> dict[str, Any]:
         return users.get(uuid)
 
 
-def get_shifts(uuid: str) -> dict[str, Any]:
-    with open(DATA_DIRECTORY + "/shifts.json", "r") as shifts_fd:
-        shifts = json.load(shifts_fd)
-        return shifts.get(uuid)
-
-
 def get_UUID(sessionID: str) -> str | None:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
