@@ -28,6 +28,14 @@ def get_shifts(uuid: str) -> dict[str, Any]:
         return shifts.get(uuid)
 
 
+# names are somewhat in danish
+AM_BIDRAG_MULTIPLIER = 0.92
+FRIKORT_LIMIT = 51_600
+BUNDSKAT_MULTIPLIER = 0.8799  # 12.01% på bundskat
+TOPSKAT_CUTOFF = 611_800  # DKK
+TOPSKAT_MULTIPLIER = 0.85  # 15% på toplønnere
+
+
 def get_shifts_formatted(
     uuid: str,
 ) -> list[
@@ -36,7 +44,6 @@ def get_shifts_formatted(
     | OrderedDict[str, float | int | dict[str, str | float | dict[str, Any]]],
 ]:
     shifts = get_shifts(uuid)
-    # this type is wrong on purpose so i dont have to put #type:ignore on almost every line
     output = {}
 
     for shift in shifts.values():
@@ -73,6 +80,7 @@ def get_shifts_formatted(
                 "start": shift["start"],
                 "stop": shift["stop"],
                 "wage": shift["wage"],
+                "wage_after_am": shift["wage"] * AM_BIDRAG_MULTIPLIER,
                 "hourly": shift["hourly"],
             }
         )
@@ -97,6 +105,18 @@ def get_shifts_formatted(
 
     for year in output.values():
         year["months"] = list(year["months"].values())
+
+    # "am-bidrag" and taxes
+    for year in output.values():
+        year["taxed_wage"] = year["wage"] * AM_BIDRAG_MULTIPLIER
+        if year["taxed_wage"] > FRIKORT_LIMIT:
+            if year["taxed_wage"] > TOPSKAT_CUTOFF:
+                year["taxed_wage"] = year["taxed_wage"] * TOPSKAT_MULTIPLIER
+            else:
+                year["taxed_wage"] = year["taxed_wage"] * BUNDSKAT_MULTIPLIER
+
+        for month in year["months"]:
+            month["wage_after_am"] = month["wage"] * AM_BIDRAG_MULTIPLIER
 
     return list(output.values())
 

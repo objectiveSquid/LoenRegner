@@ -2,6 +2,7 @@ from flask import request, Flask, make_response, render_template, jsonify, redir
 import os
 import datetime
 
+from util import recursive_round
 from user import *
 from shifts import *
 from config import *
@@ -70,7 +71,7 @@ def shifts_page():
         return custom_redirect("/login")
 
     user = get_user_info(get_UUID(session))
-    shifts = get_shifts_formatted(user["uuid"])
+    shifts = recursive_round(get_shifts_formatted(user["uuid"]))
 
     return render_template(
         "shifts.jinja2",

@@ -35,13 +35,13 @@
 
     <div id="shifts">
         {% for year in shifts %}
-            <h2>{{ year["year"] }} - {{ year["hours"] }} timer - {{ year["wage"] }}kr</h2>
+            <h2>{{ year["year"] }} - {{ year["hours"] }} timer - {{ year["wage"] }}kr ({{ year["taxed_wage"] }}kr netto)</h2>
 
             {% for month in year["months"] %}
-                <h3>{{ month["month"] }} - {{ month["hours"] }} timer - {{ month["wage"] }}kr</h3>
+                <h3>{{ month["month"] }} - {{ month["hours"] }} timer - {{ month["wage"] }}kr ({{ month["wage_after_am"] }}kr efter AM-bidrag)</h3>
 
                 {% for shift in month["shifts"] %}
-                    <span>{{ shift["date"] }}: {{ shift["start"] }} - {{ shift["stop"] }} - {{ shift["wage"] }}kr ({{ shift["hourly"] }}kr i timen) <button onclick=deleteShift("{{ shift['uuid'] }}")>Slet vagt</button></span><br>
+                    <span>{{ shift["date"] }}: {{ shift["start"] }} - {{ shift["stop"] }} - {{ shift["wage"] }}kr ({{ shift["wage_after_am"] }}kr efter AM-bidrag) ({{ shift["hourly"] }}kr i timen) <button onclick=deleteShift("{{ shift['uuid'] }}")>Slet vagt</button></span><br>
 
                 {% endfor %}
             {% endfor %}
