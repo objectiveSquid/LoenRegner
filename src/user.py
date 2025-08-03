@@ -6,19 +6,19 @@ import uuid
 import json
 
 
-def getUserInfo(uuid: Any) -> dict:
+def get_user_info(uuid: Any) -> dict[str, Any]:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
         return users.get(uuid)
 
 
-def getShifts(uuid: str) -> dict:
+def get_shifts(uuid: str) -> dict[str, Any]:
     with open(DATA_DIRECTORY + "/shifts.json", "r") as shifts_fd:
         shifts = json.load(shifts_fd)
         return shifts.get(uuid)
 
 
-def getUUID(sessionID: str) -> str | None:
+def get_UUID(sessionID: str) -> str | None:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
 
@@ -30,7 +30,7 @@ def getUUID(sessionID: str) -> str | None:
     return None
 
 
-def isValidSessionID(sessionID: str) -> bool:
+def is_valid_sessionID(sessionID: str) -> bool:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
 
@@ -42,11 +42,11 @@ def isValidSessionID(sessionID: str) -> bool:
     return False
 
 
-def generatePasswordHash(password: str, salt: str) -> str:
+def generate_password_hash(password: str, salt: str) -> str:
     return hashlib.sha256(password.encode() + salt.encode()).hexdigest()
 
 
-def generateSessionID(target_uuid: str) -> str:
+def generate_sessionID(target_uuid: str) -> str:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
 
@@ -61,12 +61,12 @@ def generateSessionID(target_uuid: str) -> str:
     return session_id
 
 
-def verifyCredentials(username: str, password: str) -> str | None:
+def verify_credentials(username: str, password: str) -> str | None:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
 
     for uuid, user in users.items():
-        if user["username"] == username and user["password"] == generatePasswordHash(
+        if user["username"] == username and user["password"] == generate_password_hash(
             password, user["salt"]
         ):
             return uuid
@@ -74,7 +74,7 @@ def verifyCredentials(username: str, password: str) -> str | None:
     return None
 
 
-def userExists(username: str) -> bool:
+def user_exists(username: str) -> bool:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
 
@@ -85,7 +85,7 @@ def userExists(username: str) -> bool:
     return False
 
 
-def createUser(username: str, password: str, hourly: int) -> str:
+def create_user(username: str, password: str, hourly: int) -> str:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
 
@@ -99,7 +99,7 @@ def createUser(username: str, password: str, hourly: int) -> str:
         "uuid": new_uuid,  # duplicate field for convienience
         "hourly": hourly,
         "username": username,
-        "password": generatePasswordHash(password, salt),
+        "password": generate_password_hash(password, salt),
         "salt": salt,
         "sessions": {},  # a dict like: `{session_id_string: expiration_epoch_time, ...}`
     }

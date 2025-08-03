@@ -8,9 +8,10 @@
 </head>
 
 <body>
-    <h2>Shifts overview for {{ user["username"] }}</h2>
+    <h1>Shifts overview for {{ user["username"] }}</h1>
 
     <div id="addshiftbox">
+        <input type="text" id="date" placeholder="Dato" value="{{ default_date }}"><br>
         <input type="text" id="starttime" placeholder="Start tidspunkt"><br>
         <input type="text" id="stoptime" placeholder="Stop tidspunkt"><br>
         <input type="text" id="hourly" placeholder="Timeløn" value="{{ user['hourly'] }}"><br>
@@ -19,7 +20,7 @@
 
     <div id="shifts">
         {% for shift in shifts %}
-            <span>{{ shift["date"] }}: {{ shift["start"] }} - {{ shift["stop"] }} - {{ shift["wage"] }}kr ({{ shift["hourly"] }}kr i timen)</span><br>
+            <span>{{ shift["date"] }}: {{ shift["start"] }} - {{ shift["stop"] }} - {{ shift["wage"] }}kr ({{ shift["hourly"] }}kr i timen) <button onclick=deleteShift("{{ shift['uuid'] }}")>Slet vagt</button></span><br>
         {% endfor %}
     </div>
 </body>

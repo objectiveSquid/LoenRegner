@@ -15,13 +15,17 @@ function signup() {
         })
     }).then((response) => {
         if (!response.ok) {
-            alert("Error: " + response.status);
+            response.json().then((json) => {
+                alert("Error: " + response.status + ", " + json["status"]);
+            })
             return;
         }
 
         response.text().then((uuid) => {
             if (uuid === null) {
-                alert("Error: " + response.status);
+                response.json().then((json) => {
+                    alert("Error: " + response.status + ", " + json["status"]);
+                })
                 return;
             }
             
@@ -36,7 +40,9 @@ function signup() {
                 })
             }).then((response) => {
                 if (!response.ok) {
-                    alert("Error: " + response.status);
+                    response.json().then((json) => {
+                        alert("Error: " + response.status + ", " + json["status"]);
+                    })
                     return;
                 }
                 

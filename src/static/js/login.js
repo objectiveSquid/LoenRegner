@@ -13,7 +13,9 @@ function login() {
         })
     }).then((response) => {
         if (!response.ok) {
-            alert("Error: " + response.status);
+            response.json().then((json) => {
+                alert("Error: " + response.status + ", " + json["status"]);
+            })
             return;
         }
             

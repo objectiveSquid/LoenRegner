@@ -1,5 +1,6 @@
-from flask import request, Flask, make_response, render_template
+from flask import request, Flask, make_response, render_template, jsonify
 import os
+import datetime
 
 from user import *
 from shifts import *
@@ -27,100 +28,83 @@ init()
 
 
 @app.route("/", methods=["GET"])
-def index():
+def index_page():
     session = request.cookies.get("SessionID", "")
 
-    if not isValidSessionID(session):
+    if not is_valid_sessionID(session):
         return app.redirect("/login")  # user not logged in
 
     return app.redirect("/shifts")
 
 
-@app.route("/getSessionID", methods=["POST"])
-def getSessionID():
-    username = request.json.get("username")
-    password = request.json.get("password")
-
-    if username is None or password is None:
-        return make_response("Missing parameters", 400)
-
-    if (uuid := verifyCredentials(username, password)) is None:
-        return make_response("Invalid username or password", 401)
-
-    session = generateSessionID(uuid)
-
-    return make_response(session, 200)
-
-
-@app.route("/createAccount", methods=["POST"])
-def createAccount():
-    username = request.json.get("username")
-    password = request.json.get("password")
-    hourly = request.json.get("hourly")
-
-    if username is None or password is None:
-        return make_response("Missing parameters", 400)
-
-    if userExists(username):
-        return make_response("Username is taken", 409)
-
-    uuid = createUser(username, password, hourly)
-
-    return make_response(uuid, 200)
-
-
 @app.route("/shifts", methods=["GET"])
-def shifts():
+def shifts_page():
     session = request.cookies.get("SessionID", "")
 
-    if not isValidSessionID(session):
+    if not is_valid_sessionID(session):
         return app.redirect("/login")
 
-    user = getUserInfo(getUUID(session))
-    shifts = getShifts(user["uuid"])
+    user = get_user_info(get_UUID(session))
+    shifts = get_shifts(user["uuid"])
+    if not isinstance(shifts, dict):
+        shifts = {}
 
-    return render_template("shifts.jinja2", user=user, shifts=shifts)
+    return render_template(
+        "shifts.jinja2",
+        user=user,
+        shifts=shifts.values(),
+        default_date=datetime.datetime.now().strftime("%d/%m/%Y"),
+    )
 
 
 @app.route("/login", methods=["GET"])
-def login():
-    if isValidSessionID(request.cookies.get("SessionID", "")):
+def login_page():
+    if is_valid_sessionID(request.cookies.get("SessionID", "")):
         return app.redirect("/shifts")
 
     return app.send_static_file("html/login.html")
 
 
 @app.route("/signup", methods=["GET"])
-def signup():
-    if isValidSessionID(request.cookies.get("SessionID", "")):
+def signup_page():
+    if is_valid_sessionID(request.cookies.get("SessionID", "")):
         return app.redirect("/shifts")
 
     return app.send_static_file("html/signup.html")
 
 
 @app.route("/add", methods=["POST"])
-def calculate():
+def add_shift_endpoint():
     session = request.cookies.get("SessionID", "")
 
-    if not isValidSessionID(session):
+    if not is_valid_sessionID(session):
         return app.redirect("/login")
 
-    uuid = getUUID(session)
+    uuid = get_UUID(session)
     if uuid is None:
-        return make_response("Invalid session", 401)
+        return make_response(jsonify({"status": "Invalid session"}), 401)
 
+    date = request.json.get("date")
     starttime = request.json.get("starttime")
     stoptime = request.json.get("stoptime")
     hourly = request.json.get("hourly")
 
+    if date is None:
+        date = datetime.datetime.now().strftime("%d/%m/%Y")
+
+    if date.count("/") != 2:
+        return make_response(jsonify({"status": "Invalid date format"}), 400)
+    elif not all(element.isnumeric() for element in date.split("/")):
+        return make_response(jsonify({"status": "Invalid date format"}), 400)
+
     if starttime is None or stoptime is None or hourly is None:
-        return make_response("Missing parameters", 400)
+        return make_response(jsonify({"status": "Missing parameters"}), 400)
 
     if starttime.count(":") != 1 or stoptime.count(":") != 1:
-        return make_response("Invalid time format", 400)
+        return make_response(jsonify({"status": "Invalid time format"}), 400)
 
     if hourly.isnumeric() is False:
-        return make_response("Hourly must be a number", 400)
+        return make_response(jsonify({"status": "Hourly must be a number"}), 400)
     hourly = int(hourly)
 
     start_hour, start_minute = starttime.split(":")
@@ -132,13 +116,15 @@ def calculate():
         stop_hour = int(stop_hour)
         stop_minute = int(stop_minute)
     except ValueError:
-        return make_response("Invalid time format", 400)
+        return make_response(jsonify({"status": "Invalid time format"}), 400)
 
     start_time_minutes = start_hour * 60 + start_minute
     stop_time_minutes = stop_hour * 60 + stop_minute
 
     if stop_time_minutes < start_time_minutes:
-        return make_response("Stop time must be after start time", 400)
+        return make_response(
+            jsonify({"status": "Stop time must be after start time"}), 400
+        )
 
     hours_worked = (stop_time_minutes - start_time_minutes) / 60
     total_pay = hours_worked * hourly
@@ -146,6 +132,60 @@ def calculate():
     minutes_worked = stop_time_minutes - start_time_minutes
     time_worked_pretty = f"{int(hours_worked)}:{minutes_worked % 60}"
 
-    addShift(uuid, starttime, stoptime, time_worked_pretty, total_pay, hourly)
+    add_shift(uuid, date, starttime, stoptime, time_worked_pretty, total_pay, hourly)
 
-    return make_response("Shift added", 200)
+    return make_response(jsonify({"status": "Shift added"}), 200)
+
+
+@app.route("/delete", methods=["POST"])
+def delete():
+    session = request.cookies.get("SessionID", "")
+
+    if not is_valid_sessionID(session):
+        return app.redirect("/login")
+
+    uuid = get_UUID(session)
+    if uuid is None:
+        return make_response(jsonify({"status": "Invalid session"}), 401)
+
+    shift_uuid = request.json.get("uuid")
+
+    if shift_uuid is None:
+        return make_response(jsonify({"status": "Missing parameters"}), 400)
+
+    delete_shift(uuid, shift_uuid)
+
+    return make_response(jsonify({"status": "Shift deleted"}), 200)
+
+
+@app.route("/getSessionID", methods=["POST"])
+def get_sessionID_endpoint():
+    username = request.json.get("username")
+    password = request.json.get("password")
+
+    if username is None or password is None:
+        return make_response(jsonify({"status": "Missing parameters"}), 400)
+
+    if (uuid := verify_credentials(username, password)) is None:
+        return make_response(jsonify({"status": "Invalid username or password"}), 401)
+
+    session = generate_sessionID(uuid)
+
+    return make_response(session, 200)
+
+
+@app.route("/createAccount", methods=["POST"])
+def create_account_endpoint():
+    username = request.json.get("username")
+    password = request.json.get("password")
+    hourly = request.json.get("hourly")
+
+    if username is None or password is None:
+        return make_response(jsonify({"status": "Missing parameters"}), 400)
+
+    if user_exists(username):
+        return make_response(jsonify({"status": "Username is taken"}), 409)
+
+    uuid = create_user(username, password, hourly)
+
+    return make_response(uuid, 200)
