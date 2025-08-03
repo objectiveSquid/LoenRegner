@@ -1,4 +1,4 @@
-from flask import request, Flask, make_response, render_template, jsonify
+from flask import request, Flask, make_response, render_template, jsonify, redirect
 import os
 import datetime
 
@@ -32,9 +32,9 @@ def index_page():
     session = request.cookies.get("SessionID", "")
 
     if not is_valid_sessionID(session):
-        return app.redirect("/login")  # user not logged in
+        return redirect("/login")  # user not logged in
 
-    return app.redirect("/shifts")
+    return redirect("/shifts")
 
 
 @app.route("/shifts", methods=["GET"])
@@ -42,7 +42,7 @@ def shifts_page():
     session = request.cookies.get("SessionID", "")
 
     if not is_valid_sessionID(session):
-        return app.redirect("/login")
+        return redirect("/login")
 
     user = get_user_info(get_UUID(session))
     shifts = get_shifts_formatted(user["uuid"])
@@ -58,7 +58,7 @@ def shifts_page():
 @app.route("/login", methods=["GET"])
 def login_page():
     if is_valid_sessionID(request.cookies.get("SessionID", "")):
-        return app.redirect("/shifts")
+        return redirect("/shifts")
 
     return app.send_static_file("html/login.html")
 
@@ -66,7 +66,7 @@ def login_page():
 @app.route("/signup", methods=["GET"])
 def signup_page():
     if is_valid_sessionID(request.cookies.get("SessionID", "")):
-        return app.redirect("/shifts")
+        return redirect("/shifts")
 
     return app.send_static_file("html/signup.html")
 
@@ -76,7 +76,7 @@ def add_shift_endpoint():
     session = request.cookies.get("SessionID", "")
 
     if not is_valid_sessionID(session):
-        return app.redirect("/login")
+        return redirect("/login")
 
     uuid = get_UUID(session)
     if uuid is None:
@@ -140,7 +140,7 @@ def delete():
     session = request.cookies.get("SessionID", "")
 
     if not is_valid_sessionID(session):
-        return app.redirect("/login")
+        return redirect("/login")
 
     uuid = get_UUID(session)
     if uuid is None:
@@ -207,7 +207,7 @@ def delete_account_endpoint():
     session = request.cookies.get("SessionID", "")
 
     if not is_valid_sessionID(session):
-        return app.redirect("/login")
+        return redirect("/login")
 
     uuid = get_UUID(session)
     if uuid is None:
@@ -223,7 +223,7 @@ def change_password_endpoint():
     session = request.cookies.get("SessionID", "")
 
     if not is_valid_sessionID(session):
-        return app.redirect("/login")
+        return redirect("/login")
 
     uuid = get_UUID(session)
     if uuid is None:
