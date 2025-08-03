@@ -297,7 +297,6 @@ def change_default_hourly():
     except ValueError:
         return make_response(jsonify({"status": "Hourly must be a number"}), 400)
 
-    print("new_hourly", new_hourly)
     change_user_hourly(uuid, int(new_hourly))
 
     return make_response(jsonify({"status": "Default hourly changed"}), 200)
