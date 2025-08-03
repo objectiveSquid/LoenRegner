@@ -47,7 +47,12 @@ def get_shifts_formatted(
         try:
             output[year]
         except KeyError:
-            output[year] = {"months": OrderedDict(), "year": year, "wage": 0}
+            output[year] = {
+                "months": OrderedDict(),
+                "year": year,
+                "wage": 0,
+                "hours": 0,
+            }
 
         try:
             output[year]["months"][month]
@@ -57,6 +62,7 @@ def get_shifts_formatted(
                 "month_number": MONTH_READABLE[month],
                 "month": MONTH_READABLE[month],
                 "wage": 0,
+                "hours": 0,
             }
 
         output[year]["months"][month]["shifts"].append(
@@ -71,7 +77,10 @@ def get_shifts_formatted(
             }
         )
         output[year]["months"][month]["wage"] += shift["wage"]
+        output[year]["months"][month]["hours"] += shift["wage"] / shift["hourly"]
+
         output[year]["wage"] += shift["wage"]
+        output[year]["hours"] += shift["wage"] / shift["hourly"]
 
         # sort individual shifts by programmer_time
         output[year]["months"][month]["shifts"].sort(
