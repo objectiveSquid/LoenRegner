@@ -29,7 +29,7 @@ function signup() {
                 return;
             }
             
-            fetch("/getSessionID", {
+            fetch("getSessionID", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

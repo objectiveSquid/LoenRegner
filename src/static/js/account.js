@@ -1,5 +1,5 @@
 function logout() {
-    fetch("/logout", {
+    fetch("logout", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -23,7 +23,7 @@ function deleteAccount() {
         return;
     }
 
-    fetch("/deleteAccount", {
+    fetch("deleteAccount", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -49,7 +49,7 @@ function changePassword() {
     const oldPassword = document.getElementById("oldPassword").value;
     const newPassword = document.getElementById("newPassword").value;
 
-    fetch("/changePassword", {
+    fetch("changePassword", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

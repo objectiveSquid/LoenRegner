@@ -2,7 +2,7 @@ function login() {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
-    fetch("/getSessionID", {
+    fetch("getSessionID", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

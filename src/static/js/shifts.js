@@ -4,7 +4,7 @@ function addShift() {
     const stoptime = document.getElementById("stoptime").value;
     const hourly = document.getElementById("hourly").value;
 
-    fetch("/add", {
+    fetch("add", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -28,7 +28,7 @@ function addShift() {
 }
 
 function deleteShift(uuid) {
-    fetch("/delete", {
+    fetch("delete", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
