@@ -23,15 +23,15 @@ function login() {
         response.json().then((json) => {
             secureString = "";
             if (location.protocol === "https:" )
-                secureString = "Secure;";
+                secureString = " Secure;";
 
             if (rememberMe) {
                 const date = new Date();
                 date.setTime(date.getTime() + (json["expires"]));
                 const expires = "expires=" + date.toUTCString();
-                document.cookie = `SessionID=${json["session"]}; ${expires}; ${secureString}`;
+                document.cookie = `SessionID=${json["session"]}; ${expires};${secureString} SameSite=Lax; path=/;`;
             } else {
-                document.cookie = `SessionID=${json["session"]}; ${secureString}`;
+                document.cookie = `SessionID=${json["session"]};${secureString} SameSite=Lax; path=/;`;
             }
 
             window.location.href = "shifts";
