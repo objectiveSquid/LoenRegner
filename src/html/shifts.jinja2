@@ -25,33 +25,25 @@
             <button onclick="addShift()">Tilføj vagt</button>
         </div>
         <div class="accountActionsContainer">
-            <span>Skift adgangskode</span>
+            <span>Skift adgangskode</span><br>
             <br>
-            <br>
-            <input type="text" id="oldPassword" placeholder="Din nuværende adgangskode">
-            <br>
-            <input type="text" id="newPassword" placeholder="Din nye adgangskode">
-            <br>
-            <button onclick="changePassword()">Skift adgangskode</button>
-            <br>
+            <input type="text" id="oldPassword" placeholder="Din nuværende adgangskode"><br>
+            <input type="text" id="newPassword" placeholder="Din nye adgangskode"><br>
+            <button onclick="changePassword()">Skift adgangskode</button><br>
             <br>
             <button onclick="logout()">Log ud</button>
             <button onclick="deleteAccount()">Slet konto</button>
         </div>
         <div class="accountActionsContainer">
-            <span>Skift standard timeløn</span>
+            <span>Skift standard timeløn</span><br>
             <br>
-            <br>
-            <input type="number" id="newHourly" placeholder="Ny timeløn" value="{{ user['hourly'] }}">
-            <br>
+            <input type="number" id="newHourly" placeholder="Ny timeløn" value="{{ user['hourly'] }}"><br>
             <button onclick="changeDefaultHourly()">Skift standard timeløn</button>
         </div>
         <div class="accountActionsContainer">
-            <span>Skift hvornår beskatning starter</span>
+            <span>Skift hvornår beskatning starter</span><br>
             <br>
-            <br>
-            <input type="number" id="newTaxStart" placeholder="Hvornår beskatning begynder" value="{{ user['tax_start'] }}">
-            <br>
+            <input type="number" id="newTaxStart" placeholder="Hvornår beskatning begynder" value="{{ user['tax_start'] }}"><br>
             <button onclick="changeTaxStart()">Skift hvornår beskatning starter</button>
         </div>
     </div>
