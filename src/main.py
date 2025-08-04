@@ -1,6 +1,16 @@
-from flask import request, Flask, make_response, render_template, jsonify, redirect
+from flask import (
+    request,
+    Flask,
+    make_response,
+    render_template,
+    jsonify,
+    redirect,
+    send_file,
+)
 import os
+import shutil
 import datetime
+import tempfile
 
 from util import *
 from user import *
@@ -172,7 +182,7 @@ def add_shift_endpoint():
 
 
 @app.route("/delete", methods=["POST"])
-def delete():
+def delete_shift_endpoint():
     session = request.cookies.get("SessionID", "")
 
     if not is_valid_sessionID(session):
@@ -360,3 +370,34 @@ def change_tax_start_endpoint():
     change_user_tax_start(uuid, new_tax_start)
 
     return make_response(jsonify({"status": SUCCESS_TEXT}), 200)
+
+
+@app.route("/downloadShifts", methods=["GET"])
+def download_shifts_endpoint():
+    session = request.cookies.get("SessionID", "")
+
+    if not is_valid_sessionID(session):
+        return custom_redirect("/login")
+
+    uuid = get_UUID(session)
+    if uuid is None:
+        return make_response(jsonify({"status": INVALID_SESSION_TEXT}), 401)
+
+    raw = request.args.get("raw") == "true"
+
+    temp_dir = tempfile.mkdtemp(prefix=f"loenregner_{uuid}_")
+    temp_file = temp_dir + f"/shifts_{uuid}.json"
+
+    if raw:
+        shifts = get_shifts(uuid)
+    else:
+        shifts = get_shifts_formatted(uuid)
+
+    with open(temp_file, "w") as shifts_fd:
+        json.dump(shifts, shifts_fd, indent=4)
+
+    return send_file(
+        temp_file,
+        mimetype="text/json",
+        as_attachment=True,
+    )

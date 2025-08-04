@@ -47,3 +47,10 @@ function deleteShift(uuid) {
         window.location.reload();
     });
 }
+
+function downloadShifts() {
+    const raw = document.getElementById("downloadRawShifts").checked;
+    console.log(`${raw}`);
+
+    window.open(`downloadShifts?raw=${raw}`, "_blank").focus();
+}
