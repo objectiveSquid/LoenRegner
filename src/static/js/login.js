@@ -21,7 +21,7 @@ function login() {
         }
             
         response.json().then((json) => {
-            const secureString = "";
+            secureString = "";
             if (location.protocol === "https:" )
                 secureString = "Secure; ";
 
