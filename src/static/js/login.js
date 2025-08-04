@@ -29,10 +29,8 @@ function login() {
                 const date = new Date();
                 date.setTime(date.getTime() + (json["expires"]));
                 const expires = "expires=" + date.toUTCString();
-                console.log(`SessionID=${json["session"]}; ${expires};${secureString} SameSite=Lax; path=/;`);
                 document.cookie = `SessionID=${json["session"]}; ${expires};${secureString} SameSite=Lax; path=/;`;
             } else {
-                console.log(`SessionID=${json["session"]};${secureString} SameSite=Lax; path=/;`);
                 document.cookie = `SessionID=${json["session"]};${secureString} SameSite=Lax; path=/;`;
             }
 
