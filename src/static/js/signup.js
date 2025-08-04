@@ -2,6 +2,7 @@ function signup() {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
     const hourly = document.getElementById("hourly").value;
+    const rememberMe = document.getElementById("rememberMe").checked;
 
     fetch("createAccount", {
         method: "POST",
@@ -46,10 +47,17 @@ function signup() {
                     return;
                 }
                 
-                response.text().then((text) => {
-                    document.cookie = "SessionID=" + text;
+                response.json().then((json) => {
+                    if (rememberMe) {
+                        const date = new Date();
+                        date.setTime(date.getTime() + (json["expires"]));
+                        const expires = "expires=" + date.toUTCString();
+                        document.cookie = `SessionID=${json["session"]}; ${expires};`;
+                    } else {
+                        document.cookie = `SessionID=${json["session"]};`;
+                    }
                     window.location.href = "shifts";
-                })
+                });
             })
         })
     })

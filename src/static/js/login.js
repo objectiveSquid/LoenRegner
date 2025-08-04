@@ -1,6 +1,7 @@
 function login() {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
+    const rememberMe = document.getElementById("rememberMe").checked;
 
     fetch("getSessionID", {
         method: "POST",
@@ -9,7 +10,7 @@ function login() {
         },
         body: JSON.stringify({
             username: username,
-            password: password
+            password: password,
         })
     }).then((response) => {
         if (!response.ok) {
@@ -19,8 +20,16 @@ function login() {
             return;
         }
             
-        response.text().then((text) => {
-            document.cookie = "SessionID=" + text;
+        response.json().then((json) => {
+            if (rememberMe) {
+                const date = new Date();
+                date.setTime(date.getTime() + (json["expires"]));
+                const expires = "expires=" + date.toUTCString();
+                document.cookie = `SessionID=${json["session"]}; ${expires};`;
+            } else {
+                document.cookie = `SessionID=${json["session"]};`;
+            }
+
             window.location.href = "shifts";
         });
     });

@@ -72,6 +72,10 @@ def shifts_page():
         return custom_redirect("/login")
 
     user = get_user_info(get_UUID(session))
+    # to turn for example: 100.0 into 100
+    if int(user["tax_start"]) == user["tax_start"]:
+        user["tax_start"] = int(user["tax_start"])
+
     shifts = recursive_round(get_shifts_formatted(user["uuid"]))
 
     return render_template(
@@ -201,7 +205,16 @@ def get_sessionID_endpoint():
 
     session = generate_sessionID(uuid)
 
-    return make_response(session, 200)
+    return make_response(
+        jsonify(
+            {
+                "session": session,
+                "expires": int((time.time() * 1000) + SESSION_TIMEOUT),
+                "status": SUCCESS_TEXT,
+            }
+        ),
+        200,
+    )
 
 
 @app.route("/createAccount", methods=["POST"])
