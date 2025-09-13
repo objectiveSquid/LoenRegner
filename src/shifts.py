@@ -139,9 +139,9 @@ def add_shift(
         programmer_date.append(int(element))
 
     programmer_time = int(
-        datetime.datetime.fromisocalendar(
-            programmer_date[2], programmer_date[1], programmer_date[0]
-        ).strftime("%s")
+        datetime.datetime(programmer_date[2], programmer_date[1], programmer_date[0])
+        .replace(tzinfo=datetime.timezone.utc)
+        .timestamp()
     )
 
     shifts[user_uuid][shift_uuid] = {
