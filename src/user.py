@@ -25,6 +25,12 @@ def get_user_info(uuid: Any) -> dict[str, Any]:
             rewrite = True
             user_info["hourly"] = DEFAULT_HOURLY
 
+        try:
+            user_info["enable_2026_am_exception"]
+        except KeyError:
+            rewrite = True
+            user_info["enable_2026_am_exception"] = False
+
     if rewrite:
         with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
             json.dump(users, users_fd, indent=4)
@@ -131,6 +137,7 @@ def create_user(username: str, password: str, hourly: float) -> str:
         "password": generate_password_hash(password, salt),
         "salt": salt,
         "sessions": {},  # a dict like: `{session_id_string: expiration_epoch_time, ...}`
+        "enable_2026_am_exception": False,
     }
 
     with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
@@ -193,6 +200,16 @@ def change_user_tax_start(uuid: str, new_tax_start: float) -> None:
         users = json.load(users_fd)
 
     users[uuid]["tax_start"] = new_tax_start
+
+    with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
+        json.dump(users, users_fd, indent=4)
+
+
+def change_am_exception_value(uuid: str, new_value: bool) -> None:
+    with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
+        users = json.load(users_fd)
+
+    users[uuid]["enable_2026_am_exception"] = new_value
 
     with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
         json.dump(users, users_fd, indent=4)

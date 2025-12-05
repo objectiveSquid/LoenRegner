@@ -372,6 +372,24 @@ def change_tax_start_endpoint():
     return make_response(jsonify({"status": SUCCESS_TEXT}), 200)
 
 
+@app.route("/changeAMExceptionValue", methods=["POST"])
+def change_am_exception_value_endpoint():
+    session = request.cookies.get("SessionID", "")
+
+    if not is_valid_sessionID(session):
+        return custom_redirect("/login")
+
+    uuid = get_UUID(session)
+    if uuid is None:
+        return make_response(jsonify({"status": INVALID_SESSION_TEXT}), 401)
+
+    new_value = request.json.get("value")
+
+    change_am_exception_value(uuid, new_value)
+
+    return make_response(jsonify({"status": SUCCESS_TEXT}), 200)
+
+
 @app.route("/downloadShifts", methods=["GET"])
 def download_shifts_endpoint():
     session = request.cookies.get("SessionID", "")

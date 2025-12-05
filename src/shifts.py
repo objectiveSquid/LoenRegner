@@ -46,6 +46,14 @@ def get_shifts_formatted(
         # output["programmer_date"][1] is the month
         year, month = shift["programmer_date"][2], shift["programmer_date"][1]
 
+        # dont calculate am-bidrag if exception is not enabled (disabled)
+        if user_info["enable_2026_am_exception"] and year >= 2026:
+            current_am_bidrag_multiplier = 1.0
+            am_ignored = True
+        else:
+            current_am_bidrag_multiplier = AM_BIDRAG_MULTIPLIER
+            am_ignored = False
+
         try:
             output[year]
         except KeyError:
@@ -61,10 +69,10 @@ def get_shifts_formatted(
         except KeyError:
             output[year]["months"][month] = {
                 "shifts": [],
-                "month_number": MONTH_READABLE[month],
                 "month": MONTH_READABLE[month],
                 "wage": 0,
                 "hours": 0,
+                "am_ignored": am_ignored,
             }
 
         output[year]["months"][month]["shifts"].append(
@@ -75,8 +83,9 @@ def get_shifts_formatted(
                 "start": shift["start"],
                 "stop": shift["stop"],
                 "wage": shift["wage"],
-                "wage_after_am": shift["wage"] * AM_BIDRAG_MULTIPLIER,
+                "wage_after_am": shift["wage"] * current_am_bidrag_multiplier,
                 "hourly": shift["hourly"],
+                "am_ignored": am_ignored,
             }
         )
         output[year]["months"][month]["wage"] += shift["wage"]
@@ -103,7 +112,12 @@ def get_shifts_formatted(
 
     # calculate "am-bidrag" and taxes
     for year in output.values():
-        year["taxed_wage"] = year["wage"] * AM_BIDRAG_MULTIPLIER
+        if user_info["enable_2026_am_exception"] and year["year"] >= 2026:
+            current_am_bidrag_multiplier = 1.0
+        else:
+            current_am_bidrag_multiplier = AM_BIDRAG_MULTIPLIER
+
+        year["taxed_wage"] = year["wage"] * current_am_bidrag_multiplier
 
         if year["taxed_wage"] > user_info["tax_start"]:
             if year["taxed_wage"] > TOPSKAT_CUTOFF:
@@ -114,7 +128,7 @@ def get_shifts_formatted(
             year["taxed_wage"] -= (year["taxed_wage"] - user_info["tax_start"]) * tax
 
         for month in year["months"]:
-            month["wage_after_am"] = month["wage"] * AM_BIDRAG_MULTIPLIER
+            month["wage_after_am"] = month["wage"] * current_am_bidrag_multiplier
 
     return list(output.values())
 

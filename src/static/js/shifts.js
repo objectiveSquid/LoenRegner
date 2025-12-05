@@ -50,7 +50,29 @@ function deleteShift(uuid) {
 
 function downloadShifts() {
     const raw = document.getElementById("downloadRawShifts").checked;
-    console.log(`${raw}`);
 
     window.open(`downloadShifts?raw=${raw}`, "_blank").focus();
+}
+
+function changeAMExceptionValue() {
+    const value = document.getElementById("AMExceptionValue").checked;
+
+    fetch("changeAMExceptionValue", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            value: value,
+        })
+    }).then((response) => {
+        if (!response.ok) {
+            response.json().then((json) => {
+                alert("Fejl: " + response.status + ", " + json["status"]);
+            })
+            return;
+        }
+
+        window.location.reload();
+    });
 }
