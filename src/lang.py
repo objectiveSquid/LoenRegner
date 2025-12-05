@@ -16,4 +16,4 @@ TAX_START_MUST_BE_POSITIVE_NUMBER_TEXT = (
     "Hvornår skat begynder skal være et positivt tal (eller 0)"
 )
 
-SUCCESS_TEXT = "Success"
+SUCCESS_TEXT = "Succes"
