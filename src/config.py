@@ -46,8 +46,12 @@ def load_admin_credentials():
 
 
 def get_admin_username():
+    global _ADMIN_USERNAME
+
     return _ADMIN_USERNAME
 
 
 def get_admin_password():
+    global _ADMIN_PASSWORD
+
     return _ADMIN_PASSWORD
