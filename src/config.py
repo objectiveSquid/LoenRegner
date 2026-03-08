@@ -21,12 +21,12 @@ SESSION_TIMEOUT = 1000 * 60 * 60 * 24 * 7  # 7 days in milliseconds
 MINIMUM_PASSWORD_CHARACTERS = 4
 
 # admin, shouldnt be imported
-_ADMIN_USERNAME: str = ""
-_ADMIN_PASSWORD: str = ""
+_ADMIN_CREDENTIAL: str = ""
+_ADMIN_SESSION_ID: str = ""
 
 
 def load_admin_credentials():
-    global _ADMIN_USERNAME, _ADMIN_PASSWORD
+    global _ADMIN_CREDENTIAL, _ADMIN_SESSION_ID
 
     try:
         with open(f"{DATA_DIRECTORY}/.env", "r") as env_fd:
@@ -41,17 +41,23 @@ def load_admin_credentials():
         print("INVALID .env FILE CONTENT, PANICKING.")
         exit(1)
 
-    _ADMIN_USERNAME = lines[0].casefold()
-    _ADMIN_PASSWORD = lines[1]
+    _ADMIN_CREDENTIAL = lines[0]
+    _ADMIN_SESSION_ID = lines[0]
 
 
-def get_admin_username():
-    global _ADMIN_USERNAME
+def get_admin_username() -> str:
+    global _ADMIN_CREDENTIAL
 
-    return _ADMIN_USERNAME
+    return _ADMIN_CREDENTIAL
 
 
-def get_admin_password():
-    global _ADMIN_PASSWORD
+def get_admin_password() -> str:
+    global _ADMIN_CREDENTIAL
 
-    return _ADMIN_PASSWORD
+    return _ADMIN_CREDENTIAL
+
+
+def get_admin_session_id() -> str:
+    global _ADMIN_SESSION_ID
+
+    return _ADMIN_SESSION_ID

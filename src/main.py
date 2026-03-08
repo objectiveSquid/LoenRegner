@@ -72,7 +72,7 @@ def index_page():
     if not is_valid_sessionID(session):
         return custom_redirect("/login")  # user not logged in
 
-    if session == ADMIN_SESSION_ID:
+    if session == get_admin_session_id():
         return custom_redirect("/admin")
 
     return custom_redirect("/shifts")
@@ -104,7 +104,7 @@ def shifts_page():
 def admin_page():
     session = request.cookies.get("SessionID", "")
 
-    if session != ADMIN_SESSION_ID:
+    if session != get_admin_session_id():
         return custom_redirect("/login")
 
     users = get_all_users_raw()
@@ -119,7 +119,7 @@ def admin_page():
 def login_page():
     session = request.cookies.get("SessionID", "")
 
-    if session == ADMIN_SESSION_ID:
+    if session == get_admin_session_id():
         return custom_redirect("/admin")
 
     if is_valid_sessionID(session):
@@ -132,7 +132,7 @@ def login_page():
 def signup_page():
     session = request.cookies.get("SessionID", "")
 
-    if session == ADMIN_SESSION_ID:
+    if session == get_admin_session_id():
         return custom_redirect("/admin")
 
     if is_valid_sessionID(session):
@@ -236,7 +236,7 @@ def get_sessionID_admin_endpoint():
     session = request.cookies.get("SessionID", "")
     uuid = request.json.get("uuid")
 
-    if session != ADMIN_SESSION_ID:
+    if session != get_admin_session_id():
         return make_response(jsonify({"status": INVALID_SESSION_TEXT}), 401)
 
     session = generate_sessionID(uuid)
@@ -265,7 +265,7 @@ def get_sessionID_endpoint():
         return make_response(jsonify({"status": INVALID_CREDENTIALS_TEXT}), 401)
 
     if uuid == "":  # user is admin account
-        session = ADMIN_SESSION_ID
+        session = get_admin_session_id()
         admin = True
     else:
         session = generate_sessionID(uuid)
@@ -333,7 +333,7 @@ def logout_endpoint():
 def delete_account_admin_endpoint():
     session = request.cookies.get("SessionID", "")
 
-    if session != ADMIN_SESSION_ID:
+    if session != get_admin_session_id():
         return make_response(jsonify({"status": INVALID_SESSION_TEXT}), 401)
 
     uuid = request.json.get("uuid")
@@ -366,7 +366,7 @@ def delete_account_endpoint():
 def change_password_admin_endpoint():
     session = request.cookies.get("SessionID", "")
 
-    if session != ADMIN_SESSION_ID:
+    if session != get_admin_session_id():
         return make_response(jsonify({"status": INVALID_SESSION_TEXT}), 401)
 
     new_password = request.json.get("newPassword")

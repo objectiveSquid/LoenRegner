@@ -13,10 +13,6 @@ import uuid
 import json
 
 
-# it just needs to be random on every server restart
-ADMIN_SESSION_ID = uuid.uuid4().hex
-
-
 def get_all_users_raw() -> dict[str, Any]:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         return json.load(users_fd).values()
