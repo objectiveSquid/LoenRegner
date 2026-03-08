@@ -28,6 +28,7 @@ _ADMIN_PASSWORD: str = ""
 def load_admin_credentials():
     global _ADMIN_USERNAME, _ADMIN_PASSWORD
 
+    print(os.getcwd())
     try:
         with open(".env", "r") as env_fd:
             lines = [
