@@ -37,7 +37,7 @@ def load_admin_credentials():
         print("COULD NOT LOAD .env FILE, PANICKING.")
         exit(1)
 
-    if len(lines) != 2:
+    if len(lines) != 1:
         print("INVALID .env FILE CONTENT, PANICKING.")
         exit(1)
 
