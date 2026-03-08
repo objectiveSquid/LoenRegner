@@ -333,6 +333,7 @@ def logout_endpoint():
 def delete_account_admin_endpoint():
     session = request.cookies.get("SessionID", "")
 
+    print(session, ADMIN_SESSION_ID)
     if session != ADMIN_SESSION_ID:
         return make_response(jsonify({"status": INVALID_SESSION_TEXT}), 401)
 
