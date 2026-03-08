@@ -1,9 +1,25 @@
-from config import DATA_DIRECTORY, SESSION_TIMEOUT, DEFAULT_TAX_START, DEFAULT_HOURLY
+from config import (
+    DATA_DIRECTORY,
+    SESSION_TIMEOUT,
+    DEFAULT_TAX_START,
+    DEFAULT_HOURLY,
+    get_admin_username,
+    get_admin_password,
+)
 from typing import Any
-import time
 import hashlib
+import time
 import uuid
 import json
+
+
+# it just needs to be random on every server restart
+ADMIN_SESSION_ID = uuid.uuid4().hex
+
+
+def get_all_users_raw() -> dict[str, Any]:
+    with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
+        return json.load(users_fd).values()
 
 
 def get_user_info(uuid: Any) -> dict[str, Any]:
@@ -96,6 +112,7 @@ def generate_sessionID(target_uuid: str) -> str:
     return session_id
 
 
+# returns an empty string if the credentials point to the admin account
 def verify_credentials(username: str, password: str) -> str | None:
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
@@ -105,6 +122,9 @@ def verify_credentials(username: str, password: str) -> str | None:
             password, user["salt"]
         ):
             return uuid
+
+    if username == get_admin_username() and password == get_admin_password():
+        return ""
 
     return None
 
@@ -120,7 +140,11 @@ def user_exists(username: str) -> bool:
     return False
 
 
+# if this retrurns an empty string, the username was taken by the admin account
 def create_user(username: str, password: str, hourly: float) -> str:
+    if username == get_admin_username():
+        return ""
+
     with open(DATA_DIRECTORY + "/users.json", "r") as users_fd:
         users = json.load(users_fd)
 

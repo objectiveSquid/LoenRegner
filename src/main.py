@@ -8,7 +8,6 @@ from flask import (
     send_file,
 )
 import os
-import shutil
 import datetime
 import tempfile
 
@@ -34,6 +33,8 @@ def init():
     if os.path.isfile(DATA_DIRECTORY + "/users.json") is False:
         with open(DATA_DIRECTORY + "/users.json", "w") as users_fd:
             users_fd.write("{}")
+
+    load_admin_credentials()
 
 
 init()
@@ -71,6 +72,9 @@ def index_page():
     if not is_valid_sessionID(session):
         return custom_redirect("/login")  # user not logged in
 
+    if session == ADMIN_SESSION_ID:
+        return custom_redirect("/admin")
+
     return custom_redirect("/shifts")
 
 
@@ -96,9 +100,29 @@ def shifts_page():
     )
 
 
+@app.route("/admin", methods=["GET"])
+def admin_page():
+    session = request.cookies.get("SessionID", "")
+
+    if session != ADMIN_SESSION_ID:
+        return custom_redirect("/login")
+
+    users = get_all_users_raw()
+
+    return render_template(
+        "admin.jinja2",
+        users=users,
+    )
+
+
 @app.route("/login", methods=["GET"])
 def login_page():
-    if is_valid_sessionID(request.cookies.get("SessionID", "")):
+    session = request.cookies.get("SessionID", "")
+
+    if session == ADMIN_SESSION_ID:
+        return custom_redirect("/admin")
+
+    if is_valid_sessionID(session):
         return custom_redirect("/shifts")
 
     return app.send_static_file("html/login.html")
@@ -106,7 +130,12 @@ def login_page():
 
 @app.route("/signup", methods=["GET"])
 def signup_page():
-    if is_valid_sessionID(request.cookies.get("SessionID", "")):
+    session = request.cookies.get("SessionID", "")
+
+    if session == ADMIN_SESSION_ID:
+        return custom_redirect("/admin")
+
+    if is_valid_sessionID(session):
         return custom_redirect("/shifts")
 
     return app.send_static_file("html/signup.html")
@@ -202,16 +231,13 @@ def delete_shift_endpoint():
     return make_response(jsonify({"status": SUCCESS_TEXT}), 200)
 
 
-@app.route("/getSessionID", methods=["POST"])
-def get_sessionID_endpoint():
-    username = request.json.get("username")
-    password = request.json.get("password")
+@app.route("/getSessionIDAdmin", methods=["POST"])
+def get_sessionID_admin_endpoint():
+    session = request.cookies.get("SessionID", "")
+    uuid = request.json.get("uuid")
 
-    if username is None or password is None:
-        return make_response(jsonify({"status": MISSING_PARAMETERS_TEXT}), 400)
-
-    if (uuid := verify_credentials(username, password)) is None:
-        return make_response(jsonify({"status": INVALID_CREDENTIALS_TEXT}), 401)
+    if session != ADMIN_SESSION_ID:
+        return make_response(jsonify({"status": INVALID_SESSION_TEXT}), 401)
 
     session = generate_sessionID(uuid)
 
@@ -227,9 +253,40 @@ def get_sessionID_endpoint():
     )
 
 
+@app.route("/getSessionID", methods=["POST"])
+def get_sessionID_endpoint():
+    username = request.json.get("username").casefold()
+    password = request.json.get("password")
+
+    if username is None or password is None:
+        return make_response(jsonify({"status": MISSING_PARAMETERS_TEXT}), 400)
+
+    if (uuid := verify_credentials(username, password)) is None:
+        return make_response(jsonify({"status": INVALID_CREDENTIALS_TEXT}), 401)
+
+    if uuid == "":  # user is admin account
+        session = ADMIN_SESSION_ID
+        admin = True
+    else:
+        session = generate_sessionID(uuid)
+        admin = False
+
+    return make_response(
+        jsonify(
+            {
+                "session": session,
+                "expires": int((time.time() * 1000) + SESSION_TIMEOUT),
+                "status": SUCCESS_TEXT,
+                "admin": admin,
+            }
+        ),
+        200,
+    )
+
+
 @app.route("/createAccount", methods=["POST"])
 def create_account_endpoint():
-    username = request.json.get("username")
+    username = request.json.get("username").casefold()
     password = request.json.get("password")
     hourly = request.json.get("hourly")
 
@@ -252,6 +309,9 @@ def create_account_endpoint():
         return make_response(jsonify({"status": USERNAME_TAKEN_TEXT}), 409)
 
     uuid = create_user(username, password, float(hourly))
+    if uuid == "":
+        # use an intentioally ambiguous error message, we dont want the user to know that the username is taken by the admin account
+        return make_response(jsonify({"status": AMBIGUOUS_ERROR_TEXT}), 500)
 
     return make_response(uuid, 200)
 
@@ -269,6 +329,23 @@ def logout_endpoint():
     return response
 
 
+@app.route("/deleteAccountAdmin", methods=["POST"])
+def delete_account_admin_endpoint():
+    session = request.cookies.get("SessionID", "")
+
+    if session != ADMIN_SESSION_ID:
+        return make_response(jsonify({"status": INVALID_SESSION_TEXT}), 401)
+
+    uuid = request.json.get("uuid")
+
+    if uuid is None:
+        return make_response(jsonify({"status": MISSING_PARAMETERS_TEXT}), 400)
+
+    delete_user(uuid)
+
+    return make_response(jsonify({"status": SUCCESS_TEXT}), 200)
+
+
 @app.route("/deleteAccount", methods=["POST"])
 def delete_account_endpoint():
     session = request.cookies.get("SessionID", "")
@@ -281,6 +358,21 @@ def delete_account_endpoint():
         return make_response(jsonify({"status": INVALID_SESSION_TEXT}), 401)
 
     delete_user(uuid)
+
+    return make_response(jsonify({"status": SUCCESS_TEXT}), 200)
+
+
+@app.route("/changePasswordAdmin", methods=["POST"])
+def change_password_admin_endpoint():
+    session = request.cookies.get("SessionID", "")
+
+    if session != ADMIN_SESSION_ID:
+        return make_response(jsonify({"status": INVALID_SESSION_TEXT}), 401)
+
+    new_password = request.json.get("newPassword")
+    target_uuid = request.json.get("uuid")
+
+    change_password(target_uuid, new_password)
 
     return make_response(jsonify({"status": SUCCESS_TEXT}), 200)
 

@@ -34,7 +34,10 @@ function login() {
                 document.cookie = `SessionID=${json["session"]};${secureString} SameSite=Lax; path=/;`;
             }
 
-            window.location.href = "shifts";
+            if (json["admin"] === true)
+                window.location.href = "admin";
+            else
+                window.location.href = "shifts";
         });
     });
 }

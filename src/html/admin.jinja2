@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="dk">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin panel</title>
+    <script src="static/js/admin.js"></script>
+</head>
+
+<body>
+</body>
+    <h1>Admin panel</h1>
+    <button onclick=logoutAdmin()>Log ud</button>
+    <h2>Brugere:</h2>
+    <div>
+        {% for user in users %}
+            <div>
+                <span>{{ user['username'] }}</span>
+                <br>
+                <button onclick=deleteAccountAdmin("{{ user['uuid'] }}")>Slet bruger</button>
+                <button onclick=loginAsUserAdmin("{{ user['uuid'] }}")>Login som bruger</button>
+                <br>
+                {# lazy element naming, i know #}
+                <input type="text" placeholder="Adgangskode" id="{{ user['uuid'] }}">
+                <button onclick=changeUserPasswordAdmin("{{ user['uuid'] }}")>Skift adgangskode</button>
+            </div>
+            <br>
+        {% endfor %}
+    </div>
+</html>

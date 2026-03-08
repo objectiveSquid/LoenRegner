@@ -1,5 +1,6 @@
 from config import MINIMUM_PASSWORD_CHARACTERS
 
+AMBIGUOUS_ERROR_TEXT = "Fejl, prøv måske igen senere"
 INVALID_SESSION_TEXT = "Ugyldig session, prøv at logge ud og ind igen."
 INVALID_DATE_TEXT = "Ugyldig datoformat, skal være som dd/mm/åååå"
 INVALID_TIME_TEXT = "Ugyldig tidsformat, skal være som 12:00"

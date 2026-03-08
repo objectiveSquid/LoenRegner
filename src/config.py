@@ -19,3 +19,35 @@ DEFAULT_TAX_START = FRIKORT_LIMIT
 # other
 SESSION_TIMEOUT = 1000 * 60 * 60 * 24 * 7  # 7 days in milliseconds
 MINIMUM_PASSWORD_CHARACTERS = 4
+
+# admin, shouldnt be imported
+_ADMIN_USERNAME: str = ""
+_ADMIN_PASSWORD: str = ""
+
+
+def load_admin_credentials():
+    global _ADMIN_USERNAME, _ADMIN_PASSWORD
+
+    try:
+        with open(".env", "r") as env_fd:
+            lines = [
+                line.strip() for line in env_fd.read().splitlines() if line.strip()
+            ]
+    except Exception:
+        print("COULD NOT LOAD .env FILE, PANICKING.")
+        exit(1)
+
+    if len(lines) != 2:
+        print("INVALID .env FILE CONTENT, PANICKING.")
+        exit(1)
+
+    _ADMIN_USERNAME = lines[0].casefold()
+    _ADMIN_PASSWORD = lines[1]
+
+
+def get_admin_username():
+    return _ADMIN_USERNAME
+
+
+def get_admin_password():
+    return _ADMIN_PASSWORD
